@@ -1,4 +1,4 @@
-#Leetcode judgement for clojure
+# Leetcode judgement for clojure
 
 I'm currently learning Clojure and Lua, really do want to practice with Leetcode questions, sadly those languages are not supported.
 

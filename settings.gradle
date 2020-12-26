@@ -1,0 +1,6 @@
+rootProject.name = 'leetcode-judger'
+
+include 'common'
+include 'question-site'
+include 'offline-judger'
+include 'online-judger'
