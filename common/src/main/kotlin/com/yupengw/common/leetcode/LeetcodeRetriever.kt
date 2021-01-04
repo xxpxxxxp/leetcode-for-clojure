@@ -1,9 +1,9 @@
-package com.yupengw.login.leetcode
+package com.yupengw.common.leetcode
 
-import com.yupengw.login.Question
-import com.yupengw.login.Retriever
-import com.yupengw.login.SlimQuestion
-import com.yupengw.login.SubmitResult
+import com.yupengw.common.Question
+import com.yupengw.common.Retriever
+import com.yupengw.common.SlimQuestion
+import com.yupengw.common.SubmitResult
 
 class LeetcodeRetriever(val username: String, val password: String): Retriever, AutoCloseable {
     private var logined: Boolean = false

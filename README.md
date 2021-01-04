@@ -12,15 +12,17 @@ The sniffer uses the fact that Leetcode tells you the case you failed. It will s
 * A local application judge your Clojure code with test cases
 * A normalized online judge application host for performance compare
 
+## No goal
+* Leetcode Premium questions
+
 ## Steps
-- [ ] Login library for Leetcode
+- [ ] Common library for Leetcode login and data structures
 - [ ] Sniffer for Leetcode (exit criteria: successfully get 100 questions and their test cases)
-- [ ] Website
+- [ ] Website serving questions and test cases
 - [ ] Judge application for Clojure
 - [ ] Judge application for Lua
-- [ ] Online judge application host
-- [ ] Auto-judge plugin for Intellij platform
-- [ ] Login library & Sniffer for LintCode
+- [ ] Normalized online judge application host on Azure
+- [ ] Auto judge-submit plugin for Intellij platform
 
 As test cases are the key assets of Leetcode, the sniffer and website will be designed to limit traffic (RPS < 1/min).  
 Personally, I'm intending to judge my Clojure code, not stealing Leetcode's assets.

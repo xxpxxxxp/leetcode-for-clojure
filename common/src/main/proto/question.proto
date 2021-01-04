@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+option java_package = "com.yupengw.common";
+option java_outer_classname = "StructuredQuestion";
+
+message ParamType {
+  string name = 1;
+  ParamType innerType = 2;
+}
+
+message Param {
+  string name = 1;
+  ParamType type = 2;
+}
+
+message Method {
+  string name = 1;
+  repeated Param params = 2;
+  repeated Param returnParams = 3;
+}
+
+message Solution {
+  string name = 1;
+  Method constructor = 2;
+  repeated Method methods = 3;
+}
+
+message Testcase {
+  repeated string params = 1;
+}
+
+message Question {
+  int32 id = 1;
+  string title = 2;
+  string description = 3;
+  Solution solution = 4;
+  repeated Testcase testCases = 5;
+}

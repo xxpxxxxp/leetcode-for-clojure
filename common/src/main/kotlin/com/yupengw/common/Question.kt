@@ -1,4 +1,4 @@
-package com.yupengw.login
+package com.yupengw.common
 
 open class SlimQuestion(
     val source: Source,
@@ -18,7 +18,7 @@ open class Question (
     val tag: Set<String>
 ): SlimQuestion(source, id, title, link)
 
-class StoutQuestion (
+class FullQuestion (
     source: Source,
     id: Int,
     title: String,

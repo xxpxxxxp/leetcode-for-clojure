@@ -1,4 +1,4 @@
-package com.yupengw.login
+package com.yupengw.common
 
 interface Retriever {
     fun allQuestions(): List<SlimQuestion>
