@@ -1,79 +1,82 @@
 package com.yupengw.common.leetcode
 
-import com.yupengw.common.Difficulty
 import com.yupengw.common.SlimQuestion
-import com.yupengw.common.SubmitResult
 import okhttp3.*
 import com.google.gson.Gson
+import com.google.gson.JsonObject
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
 
-// cross-site request forgery
-data class LeetcodeCSRF(
-    val username: String,
-    val loginCSRF: String,
-    val sessionCSRF: String,
+class LeetcodeSession(
+    // cross-site request forgery
+    var sessionCSRF: String,
     val sessionId: String
-)
-
-class LeetcodeSession(session: LeetcodeCSRF) {
+) {
     private val baseUrl = "https://leetcode.com"
+    private val client = OkHttpClient()
+    private val gson = Gson()
 
-    fun listProblems(): List<SlimQuestion> {
-        data class Stat(
-            val question_id: Int,
-            val question__title: String,
-            val question__title_slug: String,
-            val frontend_question_id: Int
-        )
-        data class Problem(val stat: Stat, val difficulty: Difficulty, val paid_only: Boolean)
-        data class ListProblemResult(val stat_status_pairs: List<Problem>)
+    private fun buildRequest(url: String): Request.Builder =
+        Request.Builder()
+            .url(url)
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36")
+            .header("Accept", "application/json")
+            .header("Accept-Language", "en-US,en;q=0.5")
+            .header("Origin", "https://leetcode.com")
+            .header("Referer", url)
+            .header("X-CSRFToken", sessionCSRF)
+            .header(
+                "Cookie",
+                listOf(
+                    "LEETCODE_SESSION" to sessionId,
+                    "csrftoken" to sessionCSRF
+                ).joinToString(";") { "${it.first}=${it.second}" }
+            )
 
-        return Gson().fromString()
+    internal data class Submission(val submission_id: Long)
+
+    fun checkResult(submitId: Long) {
+        client.newCall(
+            buildRequest("https://leetcode.com/submissions/detail/$submitId/check/")
+                .get()
+                .build())
+            .execute()
+            .use { r2 ->
+                println(r2.code)
+                println(r2.body?.string())
+            }
     }
 
-    fun submit(question: SlimQuestion, language: String, code: String): SubmitResult {
+    fun submit(question: SlimQuestion, language: String, code: String) {
+        val body = JsonObject().apply {
+            this.addProperty("question_id", question.id)
+            this.addProperty("lang", language)
+            this.addProperty("typed_code", code)
+        }.toString()
 
+        client.newCall(
+            buildRequest(question.link + "/submit/")
+                .post(
+                    body.toRequestBody("application/json".toMediaType())
+                )
+                .build())
+            .execute()
+            .use { r1 ->
+                if (r1.code == 200) {
+                    val submitId = gson.fromJson(r1.body?.string(), Submission::class.java).submission_id
+                    client.newCall(
+                        buildRequest("https://leetcode.com/submissions/detail/$submitId/check/")
+                            .get()
+                            .build())
+                        .execute()
+                        .use { r2 ->
+                            println(r2.code)
+                            println(r2.body?.string())
+                        }
+                }
+            }
     }
 }
 
-fun getSetCookieValue(response: Response, key: String): String? =
-    response.headers("set-cookie")
-        .flatMap { it.split(";") }
-        .map { it.trim().split("=") }
-        .singleOrNull { it[0] == key }
-        ?.get(1)
-
 fun main() {
-    val client = OkHttpClient()
-
-    val loginCSRF = client.newCall(
-        Request.Builder()
-            .url("https://leetcode.com/")
-            .build())
-        .execute()
-        .use { getSetCookieValue(it, "csrftoken") }
-        ?: return
-
-    println(loginCSRF)
-
-    client.newCall(
-        Request.Builder()
-            .url("https://leetcode.com/accounts/login/")
-            .header("Origin", "https://leetcode.com")
-            .header("Referer", "https://leetcode.com/accounts/login/")
-            .header("Cookie", "csrftoken=$loginCSRF;")
-            .post(
-                MultipartBody.Builder()
-                    .setType(MultipartBody.FORM)
-                    .addFormDataPart("csrfmiddlewaretoken", loginCSRF)
-                    .addFormDataPart("login", "g04103582@126.com")
-                    .addFormDataPart("password", "XP7824147")
-                    .build()
-            )
-            .build())
-        .execute()
-        .use { response ->
-            println(response.code)
-            println(getSetCookieValue(response, "csrftoken"))
-            println(getSetCookieValue(response, "LEETCODE_SESSION"))
-        }
 }
