@@ -18,7 +18,9 @@ open class SlimQuestion(
     title: String,
     titleSlug: String,
     val difficulty: Int
-): BaseQuestion(title, titleSlug)
+): BaseQuestion(title, titleSlug) {
+    override fun toString(): String = "$source - $frontendId. $title"
+}
 
 data class TopicTag(val name: String, val slug: String)
 data class CodeSnippet(val lang: String, val langSlug: String, val code: String)

@@ -23,14 +23,45 @@ open class LeetcodeRetriever : QuestionRetriever {
     protected open fun buildRequest(url: String): Request.Builder =
         Request.Builder()
             .url(url)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.119 Safari/537.36")
+            .header("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36 Edg/87.0.664.66")
             .header("Accept", JSON_TYPE)
             .header("Accept-Language", "en-US,en;q=0.5")
             .header("Origin", "https://leetcode.com")
             .header("Referer", url)
 
+    data class Stat(
+        val question_id: Int,
+        val question__title: String,
+        val question__title_slug: String,
+        val frontend_question_id: Int
+    )
+
+    data class Difficulty(val level: Int)
+    data class Problem(val stat: Stat, val difficulty: Difficulty, val paid_only: Boolean)
+    data class ListProblemResult(val stat_status_pairs: List<Problem>)
+
     override fun listQuestions(): List<SlimQuestion> {
-        TODO("Not yet implemented")
+        client.newCall(buildRequest("https://leetcode.com/api/problems/all/").build())
+            .execute()
+            .use { response ->
+                if (response.code == 200) {
+                    return Gson().fromJson(response.body?.string(), ListProblemResult::class.java)
+                        .stat_status_pairs
+                        .filter { !it.paid_only }
+                        .map {
+                            SlimQuestion(
+                                Source.Leetcode,
+                                it.stat.question_id,
+                                it.stat.frontend_question_id,
+                                it.stat.question__title,
+                                it.stat.question__title_slug,
+                                it.difficulty.level
+                            )
+                        }
+                }
+            }
+
+        throw Exception("failed to get all questions!")
     }
 
     internal data class LeetcodeQuestion(
@@ -137,7 +168,7 @@ open class LeetcodeRetriever : QuestionRetriever {
                             gson.fromJson(it.similarQuestions, object : TypeToken<List<BaseQuestion>>() {}.type),
                             it.topicTags,
                             it.metaData,
-                            it.codeSnippets.singleOrNull { it.lang == "Kotlin" }?.code
+                            it.codeSnippets.singleOrNull { c -> c.lang == "Kotlin" }?.code
                         )
                     }
                 }
@@ -250,9 +281,8 @@ class LeetcodeSession(
 
 fun main() {
     try {
-        val q = LeetcodeRetriever().getFullQuestion("dinner-plate-stacks")
-        println(q)
+        LeetcodeRetriever().listQuestions().forEach { println(it) }
     } catch (e: Exception) {
-        // ignore
+        println(e)
     }
 }
