@@ -9,19 +9,11 @@ repositories {
 }
 
 dependencies {
-
-    implementation "com.google.protobuf:protobuf-java:$protoBufVersion"
-    implementation 'com.google.code.gson:gson:2.8.5'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.0'
+    implementation project(":common")
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
 
     testImplementation 'junit:junit:4.+'
-}
-
-protobuf {
-    protoc {
-        // The artifact spec for the Protobuf Compiler
-        artifact = "com.google.protobuf:protoc:$protoBufVersion"
-    }
 }
 
 sourceCompatibility = JavaVersion.VERSION_11
