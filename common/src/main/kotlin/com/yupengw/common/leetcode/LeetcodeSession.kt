@@ -279,9 +279,28 @@ class LeetcodeSession(
     }
 }
 
+data class ReturnParam(val type: String)
+data class Param(val name: String, val type: String)
+data class QuestionMeta(val name: String, val params: List<Param>, val returnParam: ReturnParam)
+
 fun main() {
     try {
-        LeetcodeRetriever().listQuestions().forEach { println(it) }
+        val gson = Gson()
+        val r = LeetcodeRetriever()
+        val p = mutableSetOf<String>()
+        for (q in r.listQuestions()) {
+            try {
+                val fq = r.getFullQuestion(q.titleSlug)
+                Thread.sleep(1000L)
+                val meta = gson.fromJson(fq.metaData, QuestionMeta::class.java)
+                p.addAll(meta.params.map { it.type })
+                p.add(meta.returnParam.type)
+            } catch (e: Exception) {
+                // ignore
+            }
+        }
+
+        println(p.toList())
     } catch (e: Exception) {
         println(e)
     }

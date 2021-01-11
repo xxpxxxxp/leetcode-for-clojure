@@ -26,7 +26,25 @@ compileTestKotlin {
     kotlinOptions.jvmTarget = "11"
 }
 
+clean {
+    delete 'src/main/resources/serializer'
+    delete 'src/main/resources/deserializer'
+}
+
+task copySerializer(type: Copy) {
+    from 'src/main/kotlin/com/yupengw/retriever/serializer'
+    into 'src/main/resources/serializer'
+}
+
+task copyDeserializer(type: Copy) {
+    from 'src/main/kotlin/com/yupengw/retriever/deserializer'
+    into 'src/main/resources/deserializer'
+}
+
 jar {
+    dependsOn 'copySerializer'
+    dependsOn 'copyDeserializer'
+
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
