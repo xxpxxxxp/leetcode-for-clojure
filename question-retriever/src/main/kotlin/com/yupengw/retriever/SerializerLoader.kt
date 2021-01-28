@@ -2,21 +2,20 @@ package com.yupengw.retriever
 
 import java.io.File
 
-class SerializerLoader {
-    companion object {
-        private val PRIMARY_MAPPING = mapOf(
-            "Boolean" to "boolean",
-            "Int" to "integer",
-            "Char" to "character",
-            "Double" to "double",
-            "String" to "string"
-        )
+object SerializerLoader {
+    private val PRIMARY_MAPPING = mapOf(
+        "Boolean" to "boolean",
+        "Int" to "integer",
+        "Char" to "character",
+        "Double" to "double",
+        "String" to "string"
+    )
 
-        private const val SEPARATOR = "//++++++++++"
-    }
+    private const val SEPARATOR = "//++++++++++"
 
     val serializers: Map<String, String> = searchSerializers("serializer")
     val deserializers: Map<String, String> = searchSerializers("deserializer")
+    val hasher = extractMethod(File(Thread.currentThread().contextClassLoader.getResource("hasher/Hasher.kt")!!.path).readLines())
 
     private fun searchSerializers(resourceFolder: String): Map<String, String> =
         File(Thread.currentThread().contextClassLoader.getResource(resourceFolder)!!.path)
@@ -72,18 +71,4 @@ class SerializerLoader {
                     it
             }.joinToString("\n")
 
-}
-
-fun main() {
-    val loader = SerializerLoader()
-    loader.serializers.forEach { (k, v) ->
-        println(k)
-        println(v)
-        println("=========================")
-    }
-    loader.deserializers.forEach { (k, v) ->
-        println(k)
-        println(v)
-        println("=========================")
-    }
 }

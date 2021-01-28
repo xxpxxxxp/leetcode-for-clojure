@@ -37,28 +37,10 @@ open class Question (
     val sampleTestCase: String,
     val similarQuestions: List<BaseQuestion>,
     val topicTags: List<TopicTag>,
-    val metaData: String,
-    val ktSolution: String?
+    val metaData: String
 ): SlimQuestion(source, questionId, frontendId, title, titleSlug, difficulty)
 
-data class TestCase(val case: String, val expectedOutput: String)
-
-class FullQuestion (
-    source: Source,
-    questionId: Int,
-    frontendId: Int,
-    title: String,
-    titleSlug: String,
-    difficulty: Int,
-    description: String,
-    hints: List<String>,
-    sampleTestCase: String,
-    similarQuestions: List<BaseQuestion>,
-    topicTags: List<TopicTag>,
-    metaData: String,
-    ktSolution: String,
-    val testCases: List<TestCase>
-): Question(source, questionId, frontendId, title, titleSlug, difficulty, description, hints, sampleTestCase, similarQuestions, topicTags, metaData, ktSolution)
+data class TestCase(val input: String, val expectedOutput: String)
 
 enum class CallType {
     UNIFORM,

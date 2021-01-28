@@ -2,6 +2,7 @@ package com.yupengw.common.leetcode
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import com.yupengw.common.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -11,7 +12,7 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.*
 import java.util.concurrent.TimeoutException
 
-open class LeetcodeRetriever : QuestionRetriever {
+open class LeetcodeAnonymous : QuestionRetriever {
     companion object {
         const val JSON_TYPE = "application/json"
         val DIFFICULTY_MAP = mapOf("Easy" to 1, "Medium" to 2, "Hard" to 3)
@@ -167,8 +168,7 @@ open class LeetcodeRetriever : QuestionRetriever {
                             it.sampleTestCase,
                             gson.fromJson(it.similarQuestions, object : TypeToken<List<BaseQuestion>>() {}.type),
                             it.topicTags,
-                            it.metaData,
-                            it.codeSnippets.singleOrNull { c -> c.lang == "Kotlin" }?.code
+                            it.metaData
                         )
                     }
                 }
@@ -186,7 +186,7 @@ class LeetcodeSession(
     // cross-site request forgery
     private val sessionCSRF: String,
     private val sessionId: String
-) : LeetcodeRetriever() {
+) : LeetcodeAnonymous() {
 
     override fun buildRequest(url: String): Request.Builder =
         super.buildRequest(url)
@@ -257,36 +257,39 @@ class LeetcodeSession(
             this.addProperty("typed_code", solution)
         }.toString()
 
-        client.newCall(
+        return client.newCall(
             buildRequest("https://leetcode.com/problems/${question.titleSlug}/submit/")
                 .post(body.toRequestBody(JSON_TYPE.toMediaType()))
                 .build())
             .execute()
             .use { response ->
-                if (response.code == 200) {
-                    return checkResult(gson.fromJson(response.body?.string(), LeetcodeSubmission::class.java).submission_id).let {
-                        SubmitResult(
-                            it.status_msg!!,
-                            it.total_correct!!,
-                            it.total_testcases!!,
-                            Optional.of(TestCase(it.last_testcase!!, it.expected_output!!)
-                            ))
-                    }
+                when (response.code) {
+                    200 ->
+                        checkResult(gson.fromJson(response.body?.string(), LeetcodeSubmission::class.java).submission_id).let {
+                            SubmitResult(
+                                it.status_msg!!,
+                                it.total_correct!!,
+                                it.total_testcases!!,
+                                Optional.of(TestCase(it.last_testcase!!, it.expected_output!!))
+                            )
+                        }
+                    403 ->
+                        throw IllegalAccessException("access denied")
+                    else ->
+                        throw Exception("failed to submit question: ${response.code}")
                 }
             }
-
-        throw Exception("failed to submit question!")
     }
 }
 
 data class ReturnParam(val type: String)
 data class Param(val name: String, val type: String)
-data class QuestionMeta(val name: String, val params: List<Param>, val returnParam: ReturnParam)
+data class QuestionMeta(val name: String, val params: List<Param>, @SerializedName("return") val returnParam: ReturnParam)
 
 fun main() {
     try {
         val gson = Gson()
-        val r = LeetcodeRetriever()
+        val r = LeetcodeAnonymous()
         val p = mutableSetOf<String>()
         for (q in r.listQuestions()) {
             try {

@@ -1,5 +1,5 @@
-# username & password
-.key
+# accounts & certs
+*.key
 
 # idea
 .idea/

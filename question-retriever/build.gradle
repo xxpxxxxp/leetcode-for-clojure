@@ -12,6 +12,7 @@ dependencies {
     implementation project(":common")
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-common:$kotlinVersion"
+    implementation 'com.google.code.gson:gson:2.8.5'
 
     testImplementation 'junit:junit:4.+'
 }
@@ -29,6 +30,7 @@ compileTestKotlin {
 clean {
     delete 'src/main/resources/serializer'
     delete 'src/main/resources/deserializer'
+    delete 'src/main/resources/hasher'
 }
 
 task copySerializer(type: Copy) {
@@ -41,9 +43,15 @@ task copyDeserializer(type: Copy) {
     into 'src/main/resources/deserializer'
 }
 
+task copyHasher(type: Copy) {
+    from 'src/main/kotlin/com/yupengw/retriever/hasher'
+    into 'src/main/resources/hasher'
+}
+
 jar {
     dependsOn 'copySerializer'
     dependsOn 'copyDeserializer'
+    dependsOn 'copyHasher'
 
     from {
         configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
